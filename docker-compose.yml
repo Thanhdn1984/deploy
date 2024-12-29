@@ -1,3 +1,5 @@
+version: '3.9'
+
 services:
   dashboard:
     container_name: dashboard
@@ -14,7 +16,8 @@ services:
       - ./credentials.yml:/home/dashboard/credentials.yml
       - ./pages:/home/dashboard/frontend/pages
     networks:
-        - emqx-bridge
+      - emqx-bridge
+
   backend-api:
     container_name: backend-api
     image: hummingbot/backend-api:latest
@@ -32,6 +35,7 @@ services:
       - PASSWORD=admin
     networks:
       - emqx-bridge
+
   emqx:
     container_name: hummingbot-broker
     image: emqx:5
@@ -64,11 +68,27 @@ services:
       timeout: 25s
       retries: 5
 
+  backtrader:
+    container_name: backtrader
+    build:
+      context: ./backtrader
+      dockerfile: Dockerfile
+    ports:
+      - "8601:8501"
+    volumes:
+      - ./strategies:/app/strategies
+      - ./data:/app/data
+    environment:
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    networks:
+      - emqx-bridge
+
 networks:
   emqx-bridge:
     driver: bridge
 
 volumes:
-  emqx-data: { }
-  emqx-log: { }
-  emqx-etc: { }
+  emqx-data: {}
+  emqx-log: {}
+  emqx-etc: {}
